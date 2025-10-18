@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, ChangeEvent } from 'react';
+import { jsPDF } from 'jspdf';
 import { transcribeAudioToTamil } from '@/ai/flows/transcribe-audio-to-tamil';
 import { normalizeSlangTamil } from '@/ai/flows/normalize-slang-tamil';
 import { translateTamilToTargetLanguage } from '@/ai/flows/translate-tamil-to-target-language';
@@ -232,35 +233,44 @@ export default function Home() {
   };
 
   const handleDownload = () => {
-    const reportContent = `
-## Tamil Transcribe AI Report
+    const doc = new jsPDF();
 
-### Original Transcription (Tamil)
-${originalText}
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(18);
+    doc.text('Tamil Transcribe AI Report', 14, 22);
 
-### Normalized Text (Tamil)
-${normalizedText}
+    doc.setFontSize(12);
+    doc.text(`Generated on ${new Date().toLocaleString()}`, 14, 30);
 
-### Translation (${targetLanguage})
-${translatedText}
+    let y = 40;
 
-### Emotion Tone
-${emotion || 'Not analyzed'}
+    const addSection = (title: string, content: string) => {
+      if (y > 260) {
+        doc.addPage();
+        y = 20;
+      }
+      doc.setFont('Helvetica', 'bold');
+      doc.text(title, 14, y);
+      y += 8;
+      doc.setFont('Helvetica', 'normal');
+      const splitContent = doc.splitTextToSize(content, 180);
+      doc.text(splitContent, 14, y);
+      y += splitContent.length * 5 + 10;
+    };
 
----
-Generated on ${new Date().toLocaleString()}
-    `;
-    const blob = new Blob([reportContent.trim()], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'tamil-transcribe-ai-report.txt';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    addSection('Original Transcription (Tamil)', originalText);
+    addSection('Normalized Text (Tamil)', normalizedText);
+    addSection(`Translation (${targetLanguage})`, translatedText);
+    addSection('Emotion Tone', emotion || 'Not analyzed');
+
+    if (summaries) {
+      addSection('Tamil Summary', summaries.tamil);
+      addSection('Translated Summary', summaries.translated);
+    }
+    
+    doc.save('tamil-transcribe-ai-report.pdf');
   };
-  
+
   const hasContent = useMemo(() => !!originalText, [originalText]);
 
   return (
