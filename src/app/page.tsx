@@ -7,7 +7,7 @@ import { normalizeSlangTamil } from '@/ai/flows/normalize-slang-tamil';
 import { translateTamilToTargetLanguage } from '@/ai/flows/translate-tamil-to-target-language';
 import { detectEmotionTone } from '@/ai/flows/detect-emotion-tone';
 import { correctTamilGrammar } from '@/ai/flows/correct-tamil-grammar';
-import { summarizeAudioContent } from '@/ai/flows/summarize-audio-content';
+import { summarizeTextContent } from '@/ai/flows/summarize-text-content';
 import { textToSpeechPlayback } from '@/ai/flows/text-to-speech-playback';
 import { useToast } from '@/hooks/use-toast';
 import { useRecorder } from '@/hooks/use-recorder';
@@ -180,21 +180,15 @@ export default function Home() {
       });
       return;
     }
-    // We are summarizing the text, not the audio, as audio might not be available
-    // We will use a "hack" by passing text to TTS then that to summarize audio flow.
-    // This is not ideal, but the `summarizeAudioContent` flow requires audio.
-    // A better solution would be a text summarization flow.
+
     setLoadingState({
       active: true,
       message: 'Summarizing content...',
       progress: 50,
     });
     try {
-      const { media: audioDataUri } = await textToSpeechPlayback({
-        text: originalText,
-      });
-      const { tamilSummary, translatedSummary } = await summarizeAudioContent({
-        audioDataUri,
+      const { tamilSummary, translatedSummary } = await summarizeTextContent({
+        textContent: originalText,
         targetLanguage,
       });
       setSummaries({ tamil: tamilSummary, translated: translatedSummary });
