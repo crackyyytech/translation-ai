@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, ChangeEvent, useRef } from 'react';
+import { useState, useMemo, ChangeEvent, useRef, useEffect } from 'react';
 import { jsPDF } from 'jspdf';
 import { transcribeAudioToTamil } from '@/ai/flows/transcribe-audio-to-tamil';
 import { normalizeSlangTamil } from '@/ai/flows/normalize-slang-tamil';
@@ -39,10 +39,16 @@ export default function Home() {
   } | null>(null);
   const [targetLanguage, setTargetLanguage] = useState('English');
   const [isPlayingTTS, setIsPlayingTTS] = useState(false);
+  const [generatedDate, setGeneratedDate] = useState<string | null>(null);
   const reportRef = useRef<HTMLDivElement>(null);
 
   const { toast } = useToast();
   const { isRecording, startRecording, stopRecording } = useRecorder();
+
+  useEffect(() => {
+    // This will run only on the client, after hydration.
+    setGeneratedDate(new Date().toLocaleString());
+  }, []);
 
   const blobToDataUri = (blob: Blob) => {
     return new Promise<string>((resolve, reject) => {
@@ -310,7 +316,7 @@ export default function Home() {
         <div className="space-y-6">
           <div className="text-center">
             <h1 className="text-xl font-bold font-headline">Tamil Transcribe AI Report</h1>
-            <p className="text-sm">Generated on {new Date().toLocaleString()}</p>
+            <p className="text-sm">Generated on {generatedDate || '...'}</p>
           </div>
           
           <div className="space-y-2">
@@ -349,4 +355,3 @@ export default function Home() {
       </div>
     </div>
   );
-}
