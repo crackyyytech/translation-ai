@@ -21,6 +21,7 @@ type TranslationPaneProps = {
   isPlayingTTS: boolean;
   onTTS: () => void;
   summary?: string | null;
+  hasContent: boolean;
 };
 
 export default function TranslationPane({
@@ -30,6 +31,7 @@ export default function TranslationPane({
   isPlayingTTS,
   onTTS,
   summary,
+  hasContent,
 }: TranslationPaneProps) {
   return (
     <Card className="flex flex-col">
@@ -45,7 +47,7 @@ export default function TranslationPane({
             <Skeleton className="h-64 w-full" />
             <Skeleton className="h-24 w-full" />
           </div>
-        ) : translatedText ? (
+        ) : hasContent ? (
           <>
             <Textarea
               value={translatedText}

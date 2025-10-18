@@ -14,6 +14,7 @@ import { useRecorder } from '@/hooks/use-recorder';
 import AppHeader from '@/components/app/header';
 import TranscriptionPane from '@/components/app/transcription-pane';
 import TranslationPane from '@/components/app/translation-pane';
+import OriginalTextPane from '@/components/app/original-text-pane';
 import { Progress } from '@/components/ui/progress';
 
 type LoadingState = {
@@ -290,14 +291,18 @@ export default function Home() {
         </div>
       )}
 
-      <main className="flex-1 grid md:grid-cols-2 gap-6 p-4 md:p-6">
-        <TranscriptionPane
+      <main className="flex-1 grid md:grid-cols-3 gap-6 p-4 md:p-6">
+        <OriginalTextPane
           originalText={originalText}
+          isLoading={loadingState.active}
+        />
+        <TranscriptionPane
           normalizedText={normalizedText}
           onNormalizedTextChange={setNormalizedText}
           onGrammarCheck={handleGrammarCheck}
           isLoading={loadingState.active}
           summary={summaries?.tamil}
+          hasContent={hasContent}
         />
         <TranslationPane
           translatedText={translatedText}
@@ -306,6 +311,7 @@ export default function Home() {
           isPlayingTTS={isPlayingTTS}
           onTTS={handleTTS}
           summary={summaries?.translated}
+          hasContent={hasContent}
         />
       </main>
     </div>
