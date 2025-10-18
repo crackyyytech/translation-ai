@@ -229,28 +229,36 @@ export default function Home() {
 
   const handleDownload = () => {
     const doc = new jsPDF();
-
-    doc.setFont('Helvetica', 'bold');
+    
+    // It's important to use a font that supports the characters you want to display.
+    // The default fonts in jsPDF may not support Tamil.
+    // We'll use 'PT Sans', which is loaded by the app and has broader character support.
+    doc.setFont('PT Sans', 'bold');
     doc.setFontSize(18);
     doc.text('Tamil Transcribe AI Report', 14, 22);
 
+    doc.setFont('PT Sans', 'normal');
     doc.setFontSize(12);
     doc.text(`Generated on ${new Date().toLocaleString()}`, 14, 30);
 
-    let y = 40;
+    let y = 50;
 
     const addSection = (title: string, content: string) => {
+      if (!content) return;
       if (y > 260) {
         doc.addPage();
         y = 20;
       }
-      doc.setFont('Helvetica', 'bold');
+      doc.setFont('PT Sans', 'bold');
+      doc.setFontSize(14);
       doc.text(title, 14, y);
-      y += 8;
-      doc.setFont('Helvetica', 'normal');
+      y += 10;
+      
+      doc.setFont('PT Sans', 'normal');
+      doc.setFontSize(12);
       const splitContent = doc.splitTextToSize(content, 180);
       doc.text(splitContent, 14, y);
-      y += splitContent.length * 5 + 10;
+      y += splitContent.length * 7 + 12;
     };
 
     addSection('Original Transcription (Tamil)', originalText);
