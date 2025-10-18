@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, ChangeEvent } from 'react';
+import { useState, useMemo, ChangeEvent, useRef } from 'react';
 import { jsPDF } from 'jspdf';
 import { transcribeAudioToTamil } from '@/ai/flows/transcribe-audio-to-tamil';
 import { normalizeSlangTamil } from '@/ai/flows/normalize-slang-tamil';
@@ -39,6 +39,7 @@ export default function Home() {
   } | null>(null);
   const [targetLanguage, setTargetLanguage] = useState('English');
   const [isPlayingTTS, setIsPlayingTTS] = useState(false);
+  const reportRef = useRef<HTMLDivElement>(null);
 
   const { toast } = useToast();
   const { isRecording, startRecording, stopRecording } = useRecorder();
@@ -228,50 +229,31 @@ export default function Home() {
   };
 
   const handleDownload = () => {
-    const doc = new jsPDF();
-    
-    // It's important to use a font that supports the characters you want to display.
-    // The default fonts in jsPDF may not support Tamil.
-    // We'll use 'PT Sans', which is loaded by the app and has broader character support.
-    doc.setFont('PT Sans', 'bold');
-    doc.setFontSize(18);
-    doc.text('Tamil Transcribe AI Report', 14, 22);
-
-    doc.setFont('PT Sans', 'normal');
-    doc.setFontSize(12);
-    doc.text(`Generated on ${new Date().toLocaleString()}`, 14, 30);
-
-    let y = 50;
-
-    const addSection = (title: string, content: string) => {
-      if (!content) return;
-      if (y > 260) {
-        doc.addPage();
-        y = 20;
-      }
-      doc.setFont('PT Sans', 'bold');
-      doc.setFontSize(14);
-      doc.text(title, 14, y);
-      y += 10;
-      
-      doc.setFont('PT Sans', 'normal');
-      doc.setFontSize(12);
-      const splitContent = doc.splitTextToSize(content, 180);
-      doc.text(splitContent, 14, y);
-      y += splitContent.length * 7 + 12;
-    };
-
-    addSection('Original Transcription (Tamil)', originalText);
-    addSection('Normalized Text (Tamil)', normalizedText);
-    addSection(`Translation (${targetLanguage})`, translatedText);
-    addSection('Emotion Tone', emotion || 'Not analyzed');
-
-    if (summaries) {
-      addSection('Tamil Summary', summaries.tamil);
-      addSection('Translated Summary', summaries.translated);
+    const reportElement = reportRef.current;
+    if (!reportElement) {
+      toast({
+        variant: 'destructive',
+        title: 'Download Failed',
+        description: 'Could not find report content to download.',
+      });
+      return;
     }
-    
-    doc.save('tamil-transcribe-ai-report.pdf');
+  
+    const doc = new jsPDF({
+      orientation: 'p',
+      unit: 'px',
+      format: 'a4',
+    });
+  
+    doc.html(reportElement, {
+      callback: function (doc) {
+        doc.save('tamil-transcribe-ai-report.pdf');
+      },
+      x: 15,
+      y: 15,
+      width: 416, // A4 width in pixels at 72 dpi is ~595. 595 - 30 (margins) = 565. Use smaller for safety.
+      windowWidth: reportElement.scrollWidth,
+    });
   };
 
   const hasContent = useMemo(() => !!originalText, [originalText]);
@@ -322,6 +304,49 @@ export default function Home() {
           hasContent={hasContent}
         />
       </main>
+
+      {/* Hidden div for PDF generation */}
+      <div className="absolute -z-10 -left-[9999px] top-0 w-[446px] p-4 bg-background text-foreground" ref={reportRef}>
+        <div className="space-y-6">
+          <div className="text-center">
+            <h1 className="text-xl font-bold font-headline">Tamil Transcribe AI Report</h1>
+            <p className="text-sm">Generated on {new Date().toLocaleString()}</p>
+          </div>
+          
+          <div className="space-y-2">
+            <h2 className="text-lg font-bold font-headline border-b pb-1">Original Transcription (Tamil)</h2>
+            <p className="font-headline text-sm">{originalText || 'Not available'}</p>
+          </div>
+
+          <div className="space-y-2">
+            <h2 className="text-lg font-bold font-headline border-b pb-1">Normalized Text (Tamil)</h2>
+            <p className="font-headline text-sm">{normalizedText || 'Not available'}</p>
+          </div>
+
+          <div className="space-y-2">
+            <h2 className="text-lg font-bold font-headline border-b pb-1">Translation ({targetLanguage})</h2>
+            <p className="text-sm">{translatedText || 'Not available'}</p>
+          </div>
+
+          <div className="space-y-2">
+            <h2 className="text-lg font-bold font-headline border-b pb-1">Emotion Tone</h2>
+            <p className="text-sm capitalize">{emotion || 'Not analyzed'}</p>
+          </div>
+
+          {summaries && (
+            <>
+              <div className="space-y-2">
+                <h2 className="text-lg font-bold font-headline border-b pb-1">Tamil Summary</h2>
+                <p className="font-headline text-sm">{summaries.tamil}</p>
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-lg font-bold font-headline border-b pb-1">Translated Summary</h2>
+                <p className="text-sm">{summaries.translated}</p>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
