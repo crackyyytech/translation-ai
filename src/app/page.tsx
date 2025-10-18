@@ -244,20 +244,31 @@ export default function Home() {
       });
       return;
     }
-  
+
     const doc = new jsPDF({
       orientation: 'p',
       unit: 'px',
       format: 'a4',
     });
-  
+    
+    // We'll add a title to the PDF and then render the HTML content.
+    // Adding the title separately gives us more control over its styling.
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(20);
+    doc.text('Tamil Transcribe AI Report', doc.internal.pageSize.getWidth() / 2, 20, { align: 'center' });
+    
+    doc.setFont('Helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.text(`Generated on ${generatedDate || '...'}`, doc.internal.pageSize.getWidth() / 2, 30, { align: 'center' });
+
+
     doc.html(reportElement, {
       callback: function (doc) {
         doc.save('tamil-transcribe-ai-report.pdf');
       },
       x: 15,
-      y: 15,
-      width: 416, // A4 width in pixels at 72 dpi is ~595. 595 - 30 (margins) = 565. Use smaller for safety.
+      y: 45, // Start rendering below the title
+      width: 416, 
       windowWidth: reportElement.scrollWidth,
     });
   };
@@ -287,71 +298,32 @@ export default function Home() {
         </div>
       )}
 
-      <main className="flex-1 grid grid-cols-1 gap-6 p-4 md:p-6">
-        <OriginalTextPane
-          originalText={originalText}
-          isLoading={loadingState.active}
-        />
-        <TranscriptionPane
-          normalizedText={normalizedText}
-          onNormalizedTextChange={setNormalizedText}
-          onGrammarCheck={handleGrammarCheck}
-          isLoading={loadingState.active}
-          summary={summaries?.tamil}
-          hasContent={hasContent}
-        />
-        <TranslationPane
-          translatedText={translatedText}
-          emotion={emotion}
-          isLoading={loadingState.active}
-          isPlayingTTS={isPlayingTTS}
-          onTTS={handleTTS}
-          summary={summaries?.translated}
-          hasContent={hasContent}
-        />
-      </main>
-
-      {/* Hidden div for PDF generation */}
-      <div className="absolute -z-10 -left-[9999px] top-0 w-[446px] p-4 bg-background text-foreground" ref={reportRef}>
-        <div className="space-y-6">
-          <div className="text-center">
-            <h1 className="text-xl font-bold font-headline">Tamil Transcribe AI Report</h1>
-            <p className="text-sm">Generated on {generatedDate || '...'}</p>
-          </div>
-          
-          <div className="space-y-2">
-            <h2 className="text-lg font-bold font-headline border-b pb-1">Original Transcription (Tamil)</h2>
-            <p className="font-headline text-sm">{originalText || 'Not available'}</p>
-          </div>
-
-          <div className="space-y-2">
-            <h2 className="text-lg font-bold font-headline border-b pb-1">Normalized Text (Tamil)</h2>
-            <p className="font-headline text-sm">{normalizedText || 'Not available'}</p>
-          </div>
-
-          <div className="space-y-2">
-            <h2 className="text-lg font-bold font-headline border-b pb-1">Translation ({targetLanguage})</h2>
-            <p className="text-sm">{translatedText || 'Not available'}</p>
-          </div>
-
-          <div className="space-y-2">
-            <h2 className="text-lg font-bold font-headline border-b pb-1">Emotion Tone</h2>
-            <p className="text-sm capitalize">{emotion || 'Not analyzed'}</p>
-          </div>
-
-          {summaries && (
-            <>
-              <div className="space-y-2">
-                <h2 className="text-lg font-bold font-headline border-b pb-1">Tamil Summary</h2>
-                <p className="font-headline text-sm">{summaries.tamil}</p>
-              </div>
-              <div className="space-y-2">
-                <h2 className="text-lg font-bold font-headline border-b pb-1">Translated Summary</h2>
-                <p className="text-sm">{summaries.translated}</p>
-              </div>
-            </>
-          )}
+      <main className="flex-1 p-4 md:p-6">
+        <div className="grid grid-cols-1 gap-6" ref={reportRef}>
+          <OriginalTextPane
+            originalText={originalText}
+            isLoading={loadingState.active}
+          />
+          <TranscriptionPane
+            normalizedText={normalizedText}
+            onNormalizedTextChange={setNormalizedText}
+            onGrammarCheck={handleGrammarCheck}
+            isLoading={loadingState.active}
+            summary={summaries?.tamil}
+            hasContent={hasContent}
+          />
+          <TranslationPane
+            translatedText={translatedText}
+            emotion={emotion}
+            isLoading={loadingState.active}
+            isPlayingTTS={isPlayingTTS}
+            onTTS={handleTTS}
+            summary={summaries?.translated}
+            hasContent={hasContent}
+            targetLanguage={targetLanguage}
+          />
         </div>
-      </div>
+      </main>
     </div>
   );
+}

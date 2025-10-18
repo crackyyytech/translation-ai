@@ -22,6 +22,7 @@ type TranslationPaneProps = {
   onTTS: () => void;
   summary?: string | null;
   hasContent: boolean;
+  targetLanguage: string;
 };
 
 export default function TranslationPane({
@@ -32,12 +33,13 @@ export default function TranslationPane({
   onTTS,
   summary,
   hasContent,
+  targetLanguage,
 }: TranslationPaneProps) {
   return (
     <Card className="flex flex-col">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span className="flex items-center gap-2">Translation</span>
+          <span className="flex items-center gap-2">Translation ({targetLanguage})</span>
           {emotion && <EmotionIcon emotion={emotion} />}
         </CardTitle>
       </CardHeader>
