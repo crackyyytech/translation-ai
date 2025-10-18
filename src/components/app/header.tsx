@@ -18,6 +18,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { ThemeToggle } from './theme-toggle';
 
 type AppHeaderProps = {
   isRecording: boolean;
@@ -140,6 +141,9 @@ export default function AppHeader({
               <p>Download Report</p>
             </TooltipContent>
           </Tooltip>
+
+          <ThemeToggle />
+
            <Tooltip>
             <TooltipTrigger asChild>
                <Button
