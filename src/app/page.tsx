@@ -291,7 +291,7 @@ export default function Home() {
         </div>
       )}
 
-      <main className="flex-1 grid grid-cols-3 gap-6 p-4 md:p-6">
+      <main className="flex-1 grid grid-cols-1 gap-6 p-4 md:p-6">
         <OriginalTextPane
           originalText={originalText}
           isLoading={loadingState.active}
