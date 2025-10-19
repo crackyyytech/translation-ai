@@ -143,21 +143,6 @@ export default function AppHeader({
           </Tooltip>
 
           <ThemeToggle />
-
-           <Tooltip>
-            <TooltipTrigger asChild>
-               <Button
-                variant="ghost"
-                size="icon"
-                disabled
-              >
-                <Settings className="h-5 w-5" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Settings (coming soon)</p>
-            </TooltipContent>
-          </Tooltip>
         </TooltipProvider>
       </div>
     </header>
