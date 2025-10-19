@@ -328,7 +328,6 @@ export default function Home() {
       <main className="flex-1 p-4 md:p-6">
         <div id="report-content" className="mx-auto max-w-4xl">
             <div className="text-center mb-6">
-                <h1 className="text-2xl font-bold font-headline">Tamil Transcribe AI Report</h1>
                 <p className="text-sm text-muted-foreground">Generated on {generatedDate || '...'}</p>
             </div>
             <div className="grid grid-cols-1 gap-6">
