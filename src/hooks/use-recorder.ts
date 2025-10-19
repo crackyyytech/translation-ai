@@ -5,8 +5,12 @@ import { useToast } from './use-toast';
 
 export const useRecorder = () => {
   const [isRecording, setIsRecording] = useState(false);
+  const [analyserNode, setAnalyserNode] = useState<AnalyserNode | null>(null);
+
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
   const { toast } = useToast();
 
   const stopRecording = useCallback((): Promise<Blob | null> => {
@@ -18,6 +22,17 @@ export const useRecorder = () => {
           });
           audioChunksRef.current = [];
           setIsRecording(false);
+
+          // Clean up stream and context
+          if (mediaStreamRef.current) {
+            mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+            mediaStreamRef.current = null;
+          }
+          if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
+            audioContextRef.current.close();
+          }
+          setAnalyserNode(null);
+
           resolve(audioBlob);
         };
         mediaRecorderRef.current.stop();
@@ -34,6 +49,17 @@ export const useRecorder = () => {
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaStreamRef.current = stream;
+
+      const context = new (window.AudioContext || (window as any).webkitAudioContext)();
+      audioContextRef.current = context;
+
+      const source = context.createMediaStreamSource(stream);
+      const analyser = context.createAnalyser();
+      analyser.fftSize = 2048;
+      source.connect(analyser);
+      setAnalyserNode(analyser);
+
       setIsRecording(true);
       const recorder = new MediaRecorder(stream);
       mediaRecorderRef.current = recorder;
@@ -57,5 +83,5 @@ export const useRecorder = () => {
     }
   }, [isRecording, toast]);
 
-  return { isRecording, startRecording, stopRecording };
+  return { isRecording, startRecording, stopRecording, analyserNode };
 };

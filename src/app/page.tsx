@@ -16,6 +16,7 @@ import TranscriptionPane from '@/components/app/transcription-pane';
 import TranslationPane from '@/components/app/translation-pane';
 import OriginalTextPane from '@/components/app/original-text-pane';
 import { Progress } from '@/components/ui/progress';
+import AudioVisualizer from '@/components/app/audio-visualizer';
 
 type LoadingState = {
   active: boolean;
@@ -43,7 +44,8 @@ export default function Home() {
   const reportRef = useRef<HTMLDivElement>(null);
 
   const { toast } = useToast();
-  const { isRecording, startRecording, stopRecording } = useRecorder();
+  const { isRecording, startRecording, stopRecording, analyserNode } =
+    useRecorder();
 
   useEffect(() => {
     // This will run only on the client, after hydration.
@@ -250,25 +252,14 @@ export default function Home() {
       unit: 'px',
       format: 'a4',
     });
-    
-    // We'll add a title to the PDF and then render the HTML content.
-    // Adding the title separately gives us more control over its styling.
-    doc.setFont('Helvetica', 'bold');
-    doc.setFontSize(20);
-    doc.text('Tamil Transcribe AI Report', doc.internal.pageSize.getWidth() / 2, 20, { align: 'center' });
-    
-    doc.setFont('Helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.text(`Generated on ${generatedDate || '...'}`, doc.internal.pageSize.getWidth() / 2, 30, { align: 'center' });
-
 
     doc.html(reportElement, {
       callback: function (doc) {
         doc.save('tamil-transcribe-ai-report.pdf');
       },
       x: 15,
-      y: 45, // Start rendering below the title
-      width: 416, 
+      y: 15,
+      width: 416,
       windowWidth: reportElement.scrollWidth,
     });
   };
@@ -298,8 +289,10 @@ export default function Home() {
         </div>
       )}
 
+      {isRecording && <AudioVisualizer analyserNode={analyserNode} />}
+      
       <main className="flex-1 p-4 md:p-6">
-        <div className="grid grid-cols-1 gap-6" ref={reportRef}>
+        <div className="grid grid-cols-1 gap-6">
           <OriginalTextPane
             originalText={originalText}
             isLoading={loadingState.active}
@@ -324,6 +317,39 @@ export default function Home() {
           />
         </div>
       </main>
+
+      {/* Hidden div for PDF generation */}
+      <div className="absolute -z-10 -left-[9999px]" ref={reportRef}>
+        <div className="p-10 bg-white text-black" style={{ width: '446px' }}>
+          <div className="text-center mb-6">
+            <h1 className="text-xl font-bold font-headline">Tamil Transcribe AI Report</h1>
+            <p className="text-sm">Generated on {generatedDate || '...'}</p>
+          </div>
+          
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-lg font-semibold font-headline mb-2">Original Transcription</h2>
+              <p className="text-sm font-headline border p-2 rounded-md bg-slate-50">{originalText || 'N/A'}</p>
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold font-headline mb-2">Normalized & Corrected Tamil</h2>
+              <p className="text-sm font-headline border p-2 rounded-md bg-slate-50">{normalizedText || 'N/A'}</p>
+              {summaries?.tamil && <>
+                <h3 className="text-md font-semibold font-headline mt-4 mb-2">Summary (Tamil)</h3>
+                <p className="text-xs border p-2 rounded-md bg-slate-50">{summaries.tamil}</p>
+              </>}
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold font-headline mb-2">Translation ({targetLanguage})</h2>
+              <p className="text-sm border p-2 rounded-md bg-slate-50">{translatedText || 'N/A'}</p>
+              {summaries?.translated && <>
+                <h3 className="text-md font-semibold mt-4 mb-2">Summary ({targetLanguage})</h3>
+                <p className="text-xs border p-2 rounded-md bg-slate-50">{summaries.translated}</p>
+              </>}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
