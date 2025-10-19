@@ -6,9 +6,8 @@ import {
   Upload,
   Download,
   BookText,
-  Bot,
+  BrainCircuit,
   Square,
-  Settings,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LanguageSelector } from './language-selector';
@@ -46,7 +45,7 @@ export default function AppHeader({
   return (
     <header className="sticky top-0 z-10 flex items-center justify-between border-b bg-background/80 p-3 backdrop-blur-sm no-print">
       <div className="flex items-center gap-3">
-        <Bot className="h-7 w-7 text-primary" />
+        <BrainCircuit className="h-7 w-7 text-primary" />
         <h1 className="text-xl font-semibold tracking-tight">
           Tamil Transcribe AI
         </h1>
@@ -113,8 +112,7 @@ export default function AppHeader({
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                variant="outline"
-                size="icon"
+                variant="outline"                size="icon"
                 onClick={onSummarize}
                 disabled={isLoading || !hasContent}
               >
@@ -125,7 +123,7 @@ export default function AppHeader({
               <p>Summarize Content</p>
             </TooltipContent>
           </Tooltip>
-          
+
           <Tooltip>
             <TooltipTrigger asChild>
                <Button
