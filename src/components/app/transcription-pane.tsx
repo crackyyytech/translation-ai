@@ -9,9 +9,15 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { SpellCheck, BookOpen } from 'lucide-react';
+import { SpellCheck, BookOpen, Copy } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '../ui/separator';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '../ui/tooltip';
 
 type TranscriptionPaneProps = {
   normalizedText: string;
@@ -20,6 +26,7 @@ type TranscriptionPaneProps = {
   isLoading: boolean;
   summary?: string | null;
   hasContent: boolean;
+  onCopy: () => void;
 };
 
 export default function TranscriptionPane({
@@ -29,12 +36,30 @@ export default function TranscriptionPane({
   isLoading,
   summary,
   hasContent,
+  onCopy,
 }: TranscriptionPaneProps) {
   return (
     <Card className="flex flex-col">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 font-headline">
-          Normalized & Corrected Tamil
+        <CardTitle className="flex items-center justify-between">
+          <span className="font-headline">Normalized & Corrected Tamil</span>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onCopy}
+                  disabled={!normalizedText || isLoading}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Copy Text</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col gap-4">

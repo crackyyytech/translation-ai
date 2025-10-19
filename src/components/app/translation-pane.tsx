@@ -9,10 +9,16 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Volume2, LoaderCircle, BookOpen } from 'lucide-react';
+import { Volume2, LoaderCircle, BookOpen, Copy } from 'lucide-react';
 import EmotionIcon from './emotion-icon';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '../ui/separator';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '../ui/tooltip';
 
 type TranslationPaneProps = {
   translatedText: string;
@@ -23,6 +29,7 @@ type TranslationPaneProps = {
   summary?: string | null;
   hasContent: boolean;
   targetLanguage: string;
+  onCopy: () => void;
 };
 
 export default function TranslationPane({
@@ -34,13 +41,35 @@ export default function TranslationPane({
   summary,
   hasContent,
   targetLanguage,
+  onCopy,
 }: TranslationPaneProps) {
   return (
     <Card className="flex flex-col">
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span className="flex items-center gap-2">Translation ({targetLanguage})</span>
-          {emotion && <EmotionIcon emotion={emotion} />}
+          <span className="flex items-center gap-2">
+            Translation ({targetLanguage})
+          </span>
+          <div className="flex items-center gap-1">
+            {emotion && <EmotionIcon emotion={emotion} />}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={onCopy}
+                    disabled={!translatedText || isLoading}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Copy Text</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col gap-4">

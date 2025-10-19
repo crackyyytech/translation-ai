@@ -8,21 +8,48 @@ import {
 } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '../ui/button';
+import { Copy } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '../ui/tooltip';
 
 type OriginalTextPaneProps = {
   originalText: string;
   isLoading: boolean;
+  onCopy: () => void;
 };
 
 export default function OriginalTextPane({
   originalText,
   isLoading,
+  onCopy,
 }: OriginalTextPaneProps) {
   return (
     <Card className="flex flex-col">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 font-headline">
-          Original Transcription
+        <CardTitle className="flex items-center justify-between">
+          <span className="font-headline">Original Transcription</span>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onCopy}
+                  disabled={!originalText || isLoading}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Copy Text</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-1 flex flex-col gap-4">

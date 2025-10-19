@@ -298,6 +298,27 @@ export default function Home() {
     }
   };
 
+  const handleCopy = (textToCopy: string, type: string) => {
+    if (navigator.clipboard && textToCopy) {
+      navigator.clipboard
+        .writeText(textToCopy)
+        .then(() => {
+          toast({
+            title: 'Copied to Clipboard',
+            description: `The ${type} has been copied.`,
+          });
+        })
+        .catch((err) => {
+          console.error('Failed to copy text: ', err);
+          toast({
+            variant: 'destructive',
+            title: 'Copy Failed',
+            description: 'Could not copy text to clipboard.',
+          });
+        });
+    }
+  };
+
   const hasContent = useMemo(() => !!originalText, [originalText]);
 
   return (
@@ -331,6 +352,7 @@ export default function Home() {
             <OriginalTextPane
                 originalText={originalText}
                 isLoading={loadingState.active}
+                onCopy={() => handleCopy(originalText, 'original transcription')}
             />
             <TranscriptionPane
                 normalizedText={normalizedText}
@@ -339,6 +361,7 @@ export default function Home() {
                 isLoading={loadingState.active}
                 summary={summaries?.tamil}
                 hasContent={hasContent}
+                onCopy={() => handleCopy(normalizedText, 'normalized text')}
             />
             <TranslationPane
                 translatedText={translatedText}
@@ -349,6 +372,7 @@ export default function Home() {
                 summary={summaries?.translated}
                 hasContent={hasContent}
                 targetLanguage={targetLanguage}
+                onCopy={() => handleCopy(translatedText, 'translation')}
             />
             </div>
         </div>
