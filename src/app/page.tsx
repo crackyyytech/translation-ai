@@ -46,6 +46,7 @@ export default function Home() {
     useRecorder();
 
   useEffect(() => {
+    // This effect runs only on the client, after hydration
     setGeneratedDate(new Date().toLocaleString());
   }, []);
 
@@ -265,7 +266,7 @@ export default function Home() {
       {isRecording && <AudioVisualizer analyserNode={analyserNode} />}
       
       <main className="flex-1 p-4 md:p-6 print:p-0">
-        <div className="mx-auto max-w-4xl print:max-w-none print:w-full">
+        <div id="pdf-content" className="mx-auto max-w-4xl print:max-w-none print:w-full">
             <div className="text-center mb-6 print:block hidden">
                 <h1 className="text-2xl font-bold font-headline">Tamil Transcribe AI Report</h1>
                 <p className="text-sm text-muted-foreground">Generated on {generatedDate || '...'}</p>
