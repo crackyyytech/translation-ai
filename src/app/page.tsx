@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useMemo, ChangeEvent, useRef, useEffect } from 'react';
-import { jsPDF } from 'jspdf';
 import { transcribeAudioToTamil } from '@/ai/flows/transcribe-audio-to-tamil';
 import { normalizeSlangTamil } from '@/ai/flows/normalize-slang-tamil';
 import { translateTamilToTargetLanguage } from '@/ai/flows/translate-tamil-to-target-language';
@@ -41,14 +40,12 @@ export default function Home() {
   const [targetLanguage, setTargetLanguage] = useState('English');
   const [isPlayingTTS, setIsPlayingTTS] = useState(false);
   const [generatedDate, setGeneratedDate] = useState<string | null>(null);
-  const reportRef = useRef<HTMLDivElement>(null);
 
   const { toast } = useToast();
   const { isRecording, startRecording, stopRecording, analyserNode } =
     useRecorder();
 
   useEffect(() => {
-    // This will run only on the client, after hydration.
     setGeneratedDate(new Date().toLocaleString());
   }, []);
 
@@ -237,31 +234,7 @@ export default function Home() {
   };
 
   const handleDownload = () => {
-    const reportElement = reportRef.current;
-    if (!reportElement) {
-      toast({
-        variant: 'destructive',
-        title: 'Download Failed',
-        description: 'Could not find report content to download.',
-      });
-      return;
-    }
-
-    const doc = new jsPDF({
-      orientation: 'p',
-      unit: 'px',
-      format: 'a4',
-    });
-
-    doc.html(reportElement, {
-      callback: function (doc) {
-        doc.save('tamil-transcribe-ai-report.pdf');
-      },
-      x: 15,
-      y: 15,
-      width: 416,
-      windowWidth: reportElement.scrollWidth,
-    });
+    window.print();
   };
 
   const hasContent = useMemo(() => !!originalText, [originalText]);
@@ -281,7 +254,7 @@ export default function Home() {
       />
 
       {loadingState.active && (
-        <div className="px-8 pt-4">
+        <div className="px-8 pt-4 no-print">
           <Progress value={loadingState.progress} className="w-full" />
           <p className="text-center text-sm text-muted-foreground mt-2">
             {loadingState.message}
@@ -291,65 +264,38 @@ export default function Home() {
 
       {isRecording && <AudioVisualizer analyserNode={analyserNode} />}
       
-      <main className="flex-1 p-4 md:p-6">
-        <div className="grid grid-cols-1 gap-6">
-          <OriginalTextPane
-            originalText={originalText}
-            isLoading={loadingState.active}
-          />
-          <TranscriptionPane
-            normalizedText={normalizedText}
-            onNormalizedTextChange={setNormalizedText}
-            onGrammarCheck={handleGrammarCheck}
-            isLoading={loadingState.active}
-            summary={summaries?.tamil}
-            hasContent={hasContent}
-          />
-          <TranslationPane
-            translatedText={translatedText}
-            emotion={emotion}
-            isLoading={loadingState.active}
-            isPlayingTTS={isPlayingTTS}
-            onTTS={handleTTS}
-            summary={summaries?.translated}
-            hasContent={hasContent}
-            targetLanguage={targetLanguage}
-          />
+      <main className="flex-1 p-4 md:p-6 print:p-0">
+        <div className="mx-auto max-w-4xl print:max-w-none print:w-full">
+            <div className="text-center mb-6 print:block hidden">
+                <h1 className="text-2xl font-bold font-headline">Tamil Transcribe AI Report</h1>
+                <p className="text-sm text-muted-foreground">Generated on {generatedDate || '...'}</p>
+            </div>
+            <div className="grid grid-cols-1 gap-6">
+            <OriginalTextPane
+                originalText={originalText}
+                isLoading={loadingState.active}
+            />
+            <TranscriptionPane
+                normalizedText={normalizedText}
+                onNormalizedTextChange={setNormalizedText}
+                onGrammarCheck={handleGrammarCheck}
+                isLoading={loadingState.active}
+                summary={summaries?.tamil}
+                hasContent={hasContent}
+            />
+            <TranslationPane
+                translatedText={translatedText}
+                emotion={emotion}
+                isLoading={loadingState.active}
+                isPlayingTTS={isPlayingTTS}
+                onTTS={handleTTS}
+                summary={summaries?.translated}
+                hasContent={hasContent}
+                targetLanguage={targetLanguage}
+            />
+            </div>
         </div>
       </main>
-
-      {/* Hidden div for PDF generation */}
-      <div className="absolute -z-10 -left-[9999px]" ref={reportRef}>
-        <div className="p-10 bg-white text-black" style={{ width: '446px' }}>
-          <div className="text-center mb-6">
-            <h1 className="text-xl font-bold font-headline">Tamil Transcribe AI Report</h1>
-            <p className="text-sm">Generated on {generatedDate || '...'}</p>
-          </div>
-          
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-lg font-semibold font-headline mb-2">Original Transcription</h2>
-              <p className="text-sm font-headline border p-2 rounded-md bg-slate-50">{originalText || 'N/A'}</p>
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold font-headline mb-2">Normalized & Corrected Tamil</h2>
-              <p className="text-sm font-headline border p-2 rounded-md bg-slate-50">{normalizedText || 'N/A'}</p>
-              {summaries?.tamil && <>
-                <h3 className="text-md font-semibold font-headline mt-4 mb-2">Summary (Tamil)</h3>
-                <p className="text-xs border p-2 rounded-md bg-slate-50">{summaries.tamil}</p>
-              </>}
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold font-headline mb-2">Translation ({targetLanguage})</h2>
-              <p className="text-sm border p-2 rounded-md bg-slate-50">{translatedText || 'N/A'}</p>
-              {summaries?.translated && <>
-                <h3 className="text-md font-semibold mt-4 mb-2">Summary ({targetLanguage})</h3>
-                <p className="text-xs border p-2 rounded-md bg-slate-50">{summaries.translated}</p>
-              </>}
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
