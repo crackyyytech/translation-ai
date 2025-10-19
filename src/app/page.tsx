@@ -251,7 +251,7 @@ export default function Home() {
 
     try {
         const canvas = await html2canvas(reportElement, {
-            scale: 2, // Increase resolution
+            scale: 2,
             useCORS: true,
             backgroundColor: window.getComputedStyle(document.body).backgroundColor,
         });
@@ -259,24 +259,24 @@ export default function Home() {
         const imgData = canvas.toDataURL('image/png');
         const pdf = new jsPDF('p', 'mm', 'a4');
         const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-        const canvasWidth = canvas.width;
-        const canvasHeight = canvas.height;
-        const ratio = canvasWidth / canvasHeight;
-        const imgWidth = pdfWidth - 20; // with some margin
-        const imgHeight = imgWidth / ratio;
-        
-        let heightLeft = imgHeight;
-        let position = 10; // top margin
-        
-        pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
-        heightLeft -= (pdfHeight - 20); // subtract page height with margin
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        const imgWidth = canvas.width;
+        const imgHeight = canvas.height;
+        const ratio = imgWidth / imgHeight;
+        const pdfImageWidth = pdfWidth - 20; // margin
+        const pdfImageHeight = pdfImageWidth / ratio;
 
-        while (heightLeft > 0) {
-            position = heightLeft - imgHeight + 10;
+        let heightLeft = pdfImageHeight;
+        let position = 10; // top margin
+
+        pdf.addImage(imgData, 'PNG', 10, position, pdfImageWidth, pdfImageHeight);
+        heightLeft -= pageHeight;
+
+        while (heightLeft > -pageHeight) {
+            position = heightLeft - pdfImageHeight;
             pdf.addPage();
-            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
-            heightLeft -= (pdfHeight - 20);
+            pdf.addImage(imgData, 'PNG', 10, position, pdfImageWidth, pdfImageHeight);
+            heightLeft -= pageHeight;
         }
         
         pdf.save(`tamil-transcribe-report-${new Date().toISOString()}.pdf`);
