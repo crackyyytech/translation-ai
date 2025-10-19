@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useMemo, ChangeEvent, useRef, useEffect } from 'react';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import { transcribeAudioToTamil } from '@/ai/flows/transcribe-audio-to-tamil';
 import { normalizeSlangTamil } from '@/ai/flows/normalize-slang-tamil';
 import { translateTamilToTargetLanguage } from '@/ai/flows/translate-tamil-to-target-language';
@@ -234,8 +236,66 @@ export default function Home() {
     }
   };
 
-  const handleDownload = () => {
-    window.print();
+  const handleDownload = async () => {
+    const reportElement = document.getElementById('pdf-content');
+    if (!reportElement) {
+        toast({
+            variant: 'destructive',
+            title: 'Download Failed',
+            description: 'Could not find report content to download.',
+        });
+        return;
+    }
+
+    setLoadingState({ active: true, message: 'Preparing download...', progress: 50 });
+
+    try {
+        const canvas = await html2canvas(reportElement, {
+            scale: 2, // Increase resolution
+            useCORS: true,
+            backgroundColor: window.getComputedStyle(document.body).backgroundColor,
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const canvasWidth = canvas.width;
+        const canvasHeight = canvas.height;
+        const ratio = canvasWidth / canvasHeight;
+        const imgWidth = pdfWidth - 20; // with some margin
+        const imgHeight = imgWidth / ratio;
+        
+        let heightLeft = imgHeight;
+        let position = 10; // top margin
+        
+        pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+        heightLeft -= (pdfHeight - 20); // subtract page height with margin
+
+        while (heightLeft > 0) {
+            position = heightLeft - imgHeight + 10;
+            pdf.addPage();
+            pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+            heightLeft -= (pdfHeight - 20);
+        }
+        
+        pdf.save(`tamil-transcribe-report-${new Date().toISOString()}.pdf`);
+
+        toast({
+            title: 'Download Complete',
+            description: 'Your report has been downloaded.',
+        });
+
+    } catch (err) {
+        console.error('PDF Generation Error:', err);
+        toast({
+            variant: 'destructive',
+            title: 'Download Failed',
+            description: 'An error occurred while generating the PDF.',
+        });
+    } finally {
+        setLoadingState({ active: false, message: '', progress: 0 });
+    }
   };
 
   const hasContent = useMemo(() => !!originalText, [originalText]);
@@ -255,7 +315,7 @@ export default function Home() {
       />
 
       {loadingState.active && (
-        <div className="px-8 pt-4 no-print">
+        <div className="px-8 pt-4">
           <Progress value={loadingState.progress} className="w-full" />
           <p className="text-center text-sm text-muted-foreground mt-2">
             {loadingState.message}
@@ -265,9 +325,9 @@ export default function Home() {
 
       {isRecording && <AudioVisualizer analyserNode={analyserNode} />}
       
-      <main className="flex-1 p-4 md:p-6 print:p-0">
-        <div id="pdf-content" className="mx-auto max-w-4xl print:max-w-none print:w-full">
-            <div className="text-center mb-6 print:block hidden">
+      <main className="flex-1 p-4 md:p-6">
+        <div id="pdf-content" className="mx-auto max-w-4xl">
+            <div className="text-center mb-6">
                 <h1 className="text-2xl font-bold font-headline">Tamil Transcribe AI Report</h1>
                 <p className="text-sm text-muted-foreground">Generated on {generatedDate || '...'}</p>
             </div>

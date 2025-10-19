@@ -82,26 +82,3 @@
     @apply bg-background text-foreground;
   }
 }
-
-@layer utilities {
-  @media print {
-    body {
-      background: white !important;
-      color: black !important;
-    }
-    .no-print {
-      display: none !important;
-    }
-    main {
-      padding: 0 !important;
-    }
-    .card {
-      border: 1px solid #e5e7eb !important;
-      box-shadow: none !important;
-      break-inside: avoid;
-    }
-    .card-footer {
-      display: none !important;
-    }
-  }
-}
