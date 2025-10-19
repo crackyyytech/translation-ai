@@ -262,7 +262,6 @@ export default function Home() {
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
       
       const canvasWidth = canvas.width;
       const canvasHeight = canvas.height;
@@ -270,6 +269,7 @@ export default function Home() {
       
       const imgWidth = pdfWidth;
       const imgHeight = imgWidth / ratio;
+      const pdfHeight = pdf.internal.pageSize.getHeight();
       
       let heightLeft = imgHeight;
       let position = 0;
@@ -327,9 +327,6 @@ export default function Home() {
       
       <main className="flex-1 p-4 md:p-6">
         <div id="report-content" className="mx-auto max-w-4xl">
-            <div className="text-center mb-6">
-                <p className="text-sm text-muted-foreground">Generated on {generatedDate || '...'}</p>
-            </div>
             <div className="grid grid-cols-1 gap-6">
             <OriginalTextPane
                 originalText={originalText}
