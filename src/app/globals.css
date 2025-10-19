@@ -82,3 +82,28 @@
     @apply bg-background text-foreground;
   }
 }
+
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+  }
+  .printable-content {
+    display: block !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+  .printable-content .card {
+     box-shadow: none !important;
+     border: 1px solid #e0e0e0 !important;
+     page-break-inside: avoid;
+  }
+}
