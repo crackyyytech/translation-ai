@@ -47,7 +47,7 @@ export default function AppHeader({
       <div className="flex items-center gap-3">
         <BrainCircuit className="h-7 w-7 text-primary" />
         <h1 className="text-xl font-semibold tracking-tight">
-          Tamil Transcribe AI
+          Transcribe AI
         </h1>
       </div>
       <div className="flex items-center gap-2">
